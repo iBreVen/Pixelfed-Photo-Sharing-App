@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -e -o errexit -o nounset -o pipefail
+
+exec scripts/shell php artisan "$@"
