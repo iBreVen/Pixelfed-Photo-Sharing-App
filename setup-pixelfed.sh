@@ -53,9 +53,9 @@ echo ""
 
 # Check if containers are running
 show_progress "Checking container status..."
-if ! sudo docker-compose ps | grep -q "pixelfed-web.*Up"; then
+if ! sudo docker compose ps | grep -q "pixelfed-web.*Up"; then
     show_error "pixelfed-web container is not running!"
-    echo "Please run 'sudo docker-compose up -d' first."
+    echo "Please run 'sudo docker compose up -d' first."
     exit 1
 fi
 show_success "Containers are running"
@@ -80,9 +80,9 @@ echo ""
 ##############################################################################
 show_progress "Step 0.5: Fixing Redis configuration..."
 echo "           → Disabling Redis write blocking on save error..."
-sudo docker-compose exec -T redis redis-cli CONFIG SET stop-writes-on-bgsave-error no > /dev/null 2>&1 || true
+sudo docker compose exec -T redis redis-cli CONFIG SET stop-writes-on-bgsave-error no > /dev/null 2>&1 || true
 echo "           → Disabling Redis persistence (for development)..."
-sudo docker-compose exec -T redis redis-cli CONFIG SET save "" > /dev/null 2>&1 || true
+sudo docker compose exec -T redis redis-cli CONFIG SET save "" > /dev/null 2>&1 || true
 show_success "Redis configuration fixed"
 echo ""
 
@@ -92,13 +92,13 @@ echo ""
 show_progress "Step 1/6: Creating caches..."
 
 echo "           → Config cache..."
-sudo docker-compose exec -T web php artisan config:cache > /dev/null 2>&1
+sudo docker compose exec -T web php artisan config:cache > /dev/null 2>&1
 
 echo "           → Route cache..."
-sudo docker-compose exec -T web php artisan route:cache > /dev/null 2>&1
+sudo docker compose exec -T web php artisan route:cache > /dev/null 2>&1
 
 echo "           → View cache..."
-sudo docker-compose exec -T web php artisan view:cache > /dev/null 2>&1
+sudo docker compose exec -T web php artisan view:cache > /dev/null 2>&1
 
 show_success "All caches created (config, route, view)"
 echo ""
@@ -107,7 +107,7 @@ echo ""
 # Step 2: Package Discovery
 ##############################################################################
 show_progress "Step 2/6: Discovering Laravel packages..."
-if sudo docker-compose exec -T web php artisan package:discover > /tmp/discover.log 2>&1; then
+if sudo docker compose exec -T web php artisan package:discover > /tmp/discover.log 2>&1; then
     show_success "Packages discovered"
 else
     show_error "Package discovery failed!"
@@ -120,7 +120,7 @@ echo ""
 # Step 3: Horizon Install
 ##############################################################################
 show_progress "Step 3/6: Installing Horizon..."
-if sudo docker-compose exec -T web php artisan horizon:install > /tmp/horizon.log 2>&1; then
+if sudo docker compose exec -T web php artisan horizon:install > /tmp/horizon.log 2>&1; then
     show_success "Horizon installed"
 else
     # If already installed, no problem
@@ -134,10 +134,10 @@ echo ""
 show_progress "Step 4/6: Final cache rebuild and container restart..."
 
 echo "           → Rebuilding route cache..."
-sudo docker-compose exec -T web php artisan route:cache > /dev/null 2>&1
+sudo docker compose exec -T web php artisan route:cache > /dev/null 2>&1
 
 echo "           → Restarting web container..."
-sudo docker-compose restart web > /dev/null 2>&1
+sudo docker compose restart web > /dev/null 2>&1
 
 echo "           → Waiting for container to be ready..."
 sleep 3
@@ -150,7 +150,7 @@ echo ""
 ##############################################################################
 show_progress "Step 5/6: Verifying setup..."
 sleep 5
-if sudo docker-compose ps | grep -q "pixelfed-web.*Up"; then
+if sudo docker compose ps | grep -q "pixelfed-web.*Up"; then
     show_success "All containers are running"
 else
     show_error "Some containers are not running"
@@ -167,7 +167,7 @@ echo "========================================="
 echo ""
 echo "Next steps:"
 echo "1. Create admin user:"
-echo "   sudo docker-compose exec web php artisan user:create"
+echo "   sudo docker compose exec web php artisan user:create"
 echo ""
 echo "2. Open in browser:"
 echo "   http://$(curl -s http://checkip.amazonaws.com):8080"
